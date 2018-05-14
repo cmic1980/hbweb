@@ -3,21 +3,56 @@
     <el-row>
       <el-col :span="24">
         <el-table
-          :data="tableData"
-          style="width: 100%">
+          :data="analysisResultList">
+          <el-table-column label="" width="30">
+            <template slot-scope="scope">
+              <!-- `checked` 为 true 或 false -->
+              <el-checkbox v-model="checked"></el-checkbox>
+            </template>
+          </el-table-column>
           <el-table-column
-            prop="date"
-            label="日期"
+            align="center"
+            prop="analysisResultId"
+            label="ID"
+            width="180">
+          </el-table-column>
+
+          <el-table-column
+            align="center"
+            prop="analysisTime"
+            label="Analysis Time"
+            width="300">
+          </el-table-column>
+          <el-table-column
+            align="center"
+            prop="symbol"
+            label="Symbol"
             width="180">
           </el-table-column>
           <el-table-column
-            prop="name"
-            label="姓名"
+            align="center"
+            prop="sHour"
+            label="Hour"
+            width="180"
+            sortable="true">
+          </el-table-column>
+          <el-table-column
+            align="center"
+            prop="t"
+            label="T"
             width="180">
           </el-table-column>
           <el-table-column
-            prop="address"
-            label="地址">
+            align="center"
+            prop="income"
+            label="Income"
+            width="180">
+          </el-table-column>
+          <el-table-column
+            align="center"
+            prop="scale"
+            label="Scale"
+            width="180">
           </el-table-column>
         </el-table>
       </el-col>
@@ -34,23 +69,7 @@
   export default {
     data() {
       return {
-        tableData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1517 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1519 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1516 弄'
-        }]
+        analysisResultList:[]
       }
     }, created() {
       this.load();
@@ -68,7 +87,7 @@
           body: JSON.stringify({})
         });
         const bodyText = await response.text();
-        const analysisResultList = JSON.parse(bodyText);
+        this.analysisResultList = JSON.parse(bodyText);
       },
       submit() {
         this.$alert('这是一段内容', '标题名称', {
