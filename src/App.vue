@@ -7,7 +7,8 @@
           <el-table-column label="" width="130">
             <template slot-scope="scope">
               <!-- `checked` 为 true 或 false -->
-              <el-button @click="setOrder(scope.row)" v-show="scope.row.isPendingOrder == false">下单</el-button>
+              <el-button @click="showOrder(scope.row)" v-show="scope.row.isPendingOrder == false" type="primary">下单</el-button>
+              <el-button @click="cancelOrder(scope.row)" v-show="scope.row.isPendingOrder == true" type="danger">撤单</el-button>
             </template>
           </el-table-column>
           <el-table-column
@@ -136,7 +137,7 @@
         let json = JSON.stringify(this.analysisResultList);
         this.analysisResultList = JSON.parse(json);
 
-      }, setOrder(analysisResult) {
+      }, showOrder(analysisResult) {
         let nowXDate = new XDate();
         let year = nowXDate.getFullYear();
         let month = nowXDate.getMonth();
@@ -176,6 +177,8 @@
 
         this.formOrder = {};
         this.dialogFormVisible = false;
+      },cancelOrder(){
+
       }
     }
   }
