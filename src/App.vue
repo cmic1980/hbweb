@@ -7,7 +7,7 @@
           <el-table-column label="" width="130">
             <template slot-scope="scope">
               <!-- `checked` 为 true 或 false -->
-              <el-button @click="setOrder(scope.row)">下单</el-button>
+              <el-button @click="setOrder(scope.row)" v-show="scope.row.isPendingOrder == false">下单</el-button>
             </template>
           </el-table-column>
           <el-table-column
@@ -67,7 +67,7 @@
           <el-input v-model="formOrder.t" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="Buy Time:">
-          <el-input v-model="formOrder.buyTime" :disabled="true"></el-input>
+          <el-input v-model="formOrder.buyTimeString" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="Amount:">
           <el-input v-model="formOrder.amount" ></el-input>
@@ -87,17 +87,18 @@
     data() {
       return {
         analysisResultList: [],
+        pendingOrderList: [],
         dialogFormVisible: false,
         formOrder: {}
       }
     }, created() {
-      this.load();
+      this.loadData();
+
     }, mounted() {
 
     },
     methods: {
-      async load() {
-
+      async loadAnalysisResultList() {
         const response = await fetch('/api/analysis/list', {
           method: 'POST',
           headers: {
@@ -108,6 +109,32 @@
         const bodyText = await response.text();
         this.analysisResultList = JSON.parse(bodyText);
 
+
+      }, async loadPendingOrderList() {
+        const response = await fetch('/api/order/pending/list', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({})
+        });
+        const bodyText = await response.text();
+        this.pendingOrderList = JSON.parse(bodyText);
+      }, async loadData() {
+        await this.loadAnalysisResultList();
+        await this.loadPendingOrderList();
+
+        this.analysisResultList.forEach((analysisResult) => {
+          analysisResult.isPendingOrder = false;
+          this.pendingOrderList.forEach((pendingOrder) => {
+            if (analysisResult.symbol == pendingOrder.symbol) {
+              analysisResult.isPendingOrder = true;
+            }
+          });
+        });
+
+        let json = JSON.stringify(this.analysisResultList);
+        this.analysisResultList = JSON.parse(json);
 
       }, setOrder(analysisResult) {
         let nowXDate = new XDate();
@@ -124,7 +151,8 @@
         this.formOrder = {
           symbol: analysisResult.symbol,
           t: analysisResult.t,
-          buyTime: buyTimeXDate.toDate()
+          buyTime: buyTimeXDate.toDate(),
+          buyTimeString: buyTimeXDate.toString("yyyy-MM-dd HH:mm:ss")
         };
         this.dialogFormVisible = true;
       },async saveOrder(){
@@ -136,6 +164,15 @@
           body: JSON.stringify(this.formOrder)
         });
         const bodyText = await response.text();
+
+        // 刷新列表
+        this.analysisResultList.forEach((analysisResult) => {
+          if (analysisResult.symbol == this.formOrder.symbol) {
+            analysisResult.isPendingOrder = true;
+          }
+        });
+        let json = JSON.stringify(this.analysisResultList);
+        this.analysisResultList = JSON.parse(json);
 
         this.formOrder = {};
         this.dialogFormVisible = false;
