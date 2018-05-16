@@ -7,8 +7,7 @@
           <el-table-column label="" width="130">
             <template slot-scope="scope">
               <!-- `checked` 为 true 或 false -->
-              <el-button @click="showOrder(scope.row)" v-show="scope.row.isPendingOrder == false" type="primary">下单</el-button>
-              <el-button @click="cancelOrder(scope.row)" v-show="scope.row.isPendingOrder == true" type="danger">撤单</el-button>
+              <el-button @click="showOrder(scope.row)" v-show="scope.row.isPendingOrder == false" type="primary">下单</el-button><el-button @click="cancelOrder(scope.row.orderId)" v-show="scope.row.isPendingOrder == true" type="danger">撤单</el-button>
             </template>
           </el-table-column>
           <el-table-column
@@ -130,10 +129,10 @@
           this.pendingOrderList.forEach((pendingOrder) => {
             if (analysisResult.symbol == pendingOrder.symbol) {
               analysisResult.isPendingOrder = true;
+              analysisResult.orderId = pendingOrder.orderItemId;
             }
           });
         });
-
         let json = JSON.stringify(this.analysisResultList);
         this.analysisResultList = JSON.parse(json);
 
@@ -167,17 +166,24 @@
         const bodyText = await response.text();
 
         // 刷新列表
-        this.analysisResultList.forEach((analysisResult) => {
-          if (analysisResult.symbol == this.formOrder.symbol) {
-            analysisResult.isPendingOrder = true;
-          }
-        });
-        let json = JSON.stringify(this.analysisResultList);
-        this.analysisResultList = JSON.parse(json);
+        this.loadData();
 
         this.formOrder = {};
         this.dialogFormVisible = false;
-      },cancelOrder(){
+      }, async cancelOrder(orderId) {
+
+        const response = await fetch('/api/order/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({"orderItemId": orderId})
+        });
+        const bodyText = await response.text();
+
+        // 刷新列表
+        this.loadData();
+
 
       }
     }
