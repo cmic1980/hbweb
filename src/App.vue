@@ -54,12 +54,19 @@
             label="Scale"
             width="180">
           </el-table-column>
+          <el-table-column
+            align="center"
+            prop="price"
+            label="Price"
+            width="180">
+          </el-table-column>
         </el-table>
       </el-col>
     </el-row>
 
     <el-dialog title="订单信息" :visible.sync="dialogFormVisible" width="30%">
       <el-form :model="formOrder">
+
         <el-form-item label="Symbol:">
           <el-input v-model="formOrder.symbol" :disabled="true"></el-input>
         </el-form-item>
@@ -69,8 +76,14 @@
         <el-form-item label="Buy Time:">
           <el-input v-model="formOrder.buyTimeString" :disabled="true"></el-input>
         </el-form-item>
+        <el-form-item label="Price:">
+          <el-input v-model="formOrder.price" :disabled="true"></el-input>
+        </el-form-item>
         <el-form-item label="Amount:">
           <el-input v-model="formOrder.amount" ></el-input>
+        </el-form-item>
+        <el-form-item label="ETH:">
+          {{this.eth}}
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -93,6 +106,7 @@
       }
     }, created() {
       this.loadData();
+
 
     }, mounted() {
 
@@ -152,7 +166,8 @@
           symbol: analysisResult.symbol,
           t: analysisResult.t,
           buyTime: buyTimeXDate.toDate(),
-          buyTimeString: buyTimeXDate.toString("yyyy-MM-dd HH:mm:ss")
+          buyTimeString: buyTimeXDate.toString("yyyy-MM-dd HH:mm:ss"),
+          price: analysisResult.price
         };
         this.dialogFormVisible = true;
       },async saveOrder(){
@@ -185,6 +200,18 @@
         this.loadData();
 
 
+      }
+    },
+    computed: {
+      // 计算属性的 getter
+      eth: function () {
+        // `this` 指向 vm 实例
+        if (this.formOrder.price == null) {
+          return 0;
+        }
+
+        let s = this.formOrder.price * this.formOrder.amount;
+        return s;
       }
     }
   }
