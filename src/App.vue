@@ -3,44 +3,56 @@
     <el-row>
       <el-col :span="24">
         <el-table
-          :data="analysisResultList">
-          <el-table-column label="" width="130">
+          :data="analysisResultList"
+          :row-class-name="tableRowClassName">
+          <el-table-column label="" width="180">
             <template slot-scope="scope">
               <!-- `checked` 为 true 或 false -->
-              <el-button @click="showOrder(scope.row)" v-show="scope.row.isPendingOrder == false" type="primary">下单</el-button><el-button @click="cancelOrder(scope.row.orderId)" v-show="scope.row.isPendingOrder == true" type="danger">撤单</el-button>
+              <el-button @click="showOrder(scope.row)" v-show="scope.row.isPendingOrder == false" type="primary">下单
+              </el-button>
+
+
+              <el-tooltip class="item" effect="light" placement="right">
+                <div slot="content">数量: {{scope.row.amount}}<br/>eth: {{scope.row.eth}}</div>
+                <el-button @click="cancelOrder(scope.row.orderId)" v-show="scope.row.isPendingOrder == true"
+                           type="danger" >撤单
+                </el-button>
+              </el-tooltip>
+
+              <a :href="scope.row.exchangeUrl" style="margin-left: 4px;" target="_blank">行情</a>
             </template>
           </el-table-column>
           <el-table-column
             align="center"
             prop="analysisResultId"
             label="ID"
-            width="180">
+            width="120">
           </el-table-column>
 
           <el-table-column
             align="center"
             prop="analysisTime"
             label="Analysis Time"
-            width="300">
+            width="230">
           </el-table-column>
           <el-table-column
             align="center"
             prop="symbol"
             label="Symbol"
-            width="180">
+            width="160">
           </el-table-column>
           <el-table-column
             align="center"
             prop="sHour"
             label="Hour"
-            width="180"
+            width="120"
             sortable="true">
           </el-table-column>
           <el-table-column
             align="center"
             prop="t"
             label="T"
-            width="180">
+            width="120">
           </el-table-column>
           <el-table-column
             align="center"
@@ -58,7 +70,29 @@
             align="center"
             prop="price"
             label="Price"
-            width="180">
+            sortable
+            width="120">
+          </el-table-column>
+          <el-table-column
+            align="center"
+            prop="vol"
+            label="Vol"
+            sortable
+            width="120">
+          </el-table-column>
+          <el-table-column
+            align="center"
+            prop="amount"
+            label="Amount"
+            sortable
+            width="120">
+          </el-table-column>
+          <el-table-column
+            align="center"
+            prop="days"
+            label="Days"
+            sortable
+            width="120">
           </el-table-column>
         </el-table>
       </el-col>
@@ -80,7 +114,7 @@
           <el-input v-model="formOrder.price" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="Amount:">
-          <el-input v-model="formOrder.amount" ></el-input>
+          <el-input v-model="formOrder.amount"></el-input>
         </el-form-item>
         <el-form-item label="ETH:">
           {{this.eth}}
@@ -106,12 +140,17 @@
       }
     }, created() {
       this.loadData();
-
-
     }, mounted() {
 
     },
     methods: {
+      tableRowClassName({row, rowIndex}) {
+        console.log(row);
+        if (row.days < 2000) {
+          return 'warning-row';
+        }
+        return '';
+      },
       async loadAnalysisResultList() {
         const response = await fetch('/api/analysis/list', {
           method: 'POST',
@@ -144,6 +183,10 @@
             if (analysisResult.symbol == pendingOrder.symbol) {
               analysisResult.isPendingOrder = true;
               analysisResult.orderId = pendingOrder.orderItemId;
+              // 订单数量
+              analysisResult.amount = pendingOrder.amount;
+              // eth 数量
+              analysisResult.eth = analysisResult.price * analysisResult.amount;
             }
           });
         });
@@ -170,7 +213,7 @@
           price: analysisResult.price
         };
         this.dialogFormVisible = true;
-      },async saveOrder(){
+      }, async saveOrder() {
         const response = await fetch('/api/order/add', {
           method: 'POST',
           headers: {
@@ -225,5 +268,9 @@
     text-align: center;
     color: #2c3e50;
     margin-top: 60px;
+  }
+
+  .el-table .warning-row {
+    background: #FF8C00;
   }
 </style>
